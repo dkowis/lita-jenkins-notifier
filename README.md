@@ -34,7 +34,8 @@ Lita.configure do |config|
 
 ## Usage
 
-TODO: Describe the plugin's features and how to use them.
+You add to the jenkins notifier plugin to post to the `http://<BotHost>:<port>/jenkins/notifications` and when builds happen
+it'll notify in chat based on the matched job name.
 
 ## License
 
