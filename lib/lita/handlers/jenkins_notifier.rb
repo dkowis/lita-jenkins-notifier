@@ -14,7 +14,7 @@ module Lita
             http.post "/jenkins/notifications", :build_notification
 
             def build_notification(request, response)
-                json_stuff = request.params['payload']
+                json_stuff = request.body
                 begin
                     payload = MultiJson.load(json_stuff, :symbolize_keys => true)
                 rescue MultiJson::LoadError => e

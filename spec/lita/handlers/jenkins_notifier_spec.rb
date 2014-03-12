@@ -41,7 +41,7 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                     expect(message).to eq("[Jenkins] Build #1 started for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
 
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "STARTED", "SUCCESS", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 1, "STARTED", "SUCCESS", "master"))
 
                 subject.build_notification(request, response)
             end
@@ -52,7 +52,7 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                     expect(message).to eq("[Jenkins] [FAILURE] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
 
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
 
                 subject.build_notification(request, response)
             end
@@ -63,7 +63,7 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                     expect(message).to eq("[Jenkins] [SUCCESS] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
 
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
 
                 subject.build_notification(request, response)
             end
@@ -74,14 +74,14 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                     expect(target.room).to eq("#baz")
                     expect(message).to eq("[Jenkins] [SUCCESS] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
                 subject.build_notification(request, response)
 
                 expect(robot).to receive(:send_message) do |target, message|
                     expect(target.room).to eq("#baz")
                     expect(message).to eq("[Jenkins] [STILL SUCCESSFUL] Build #2 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 2, "COMPLETED", "SUCCESS", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 2, "COMPLETED", "SUCCESS", "master"))
                 subject.build_notification(request, response)
             end
             it "sends a notification message when the build is still failing" do
@@ -90,14 +90,14 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                     expect(target.room).to eq("#baz")
                     expect(message).to eq("[Jenkins] [FAILURE] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
                 subject.build_notification(request, response)
 
                 expect(robot).to receive(:send_message) do |target, message|
                     expect(target.room).to eq("#baz")
                     expect(message).to eq("[Jenkins] [STILL FAILING] Build #2 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 2, "COMPLETED", "FAILURE", "master"))
+                allow(request).to receive(:body).and_return(jenkins_payload("devBuild", 2, "COMPLETED", "FAILURE", "master"))
                 subject.build_notification(request, response)
             end
         end
