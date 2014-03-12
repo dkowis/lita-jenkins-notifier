@@ -18,7 +18,19 @@ gem "lita-jenkins-notifier"
 
 ## Configuration
 
-TODO: Describe any configuration attributes the plugin exposes.
+`jobs` (Hash) - A map of job names to channel notifications.
+Keys should be a regex that matches a job name (Dev.*) . You could match many of the regexpes, all will be tested.
+Values should be either the string room name, or an array of string room names.
+
+### Example
+
+```ruby
+Lita.configure do |config|
+  config.handlers.jenkins_notifier.jbos = {
+    "JenkinsJob" => "#someroom",
+    ".*" => "#spamroom"
+  }
+```
 
 ## Usage
 
