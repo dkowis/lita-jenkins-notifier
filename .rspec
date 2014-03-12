@@ -1,0 +1,2 @@
+# just some helpers for rspec with jruby and with colors :)
+--color --tty
