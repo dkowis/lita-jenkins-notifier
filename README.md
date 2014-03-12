@@ -1,6 +1,12 @@
 # lita-jenkins-notifier
 
-TODO: Add a description of the plugin.
+[![Build Status](https://travis-ci.org/dkowis/lita-jenkins-notifier.png)](https://travis-ci.org/dkowis/lita-jenkins-notifier)
+[![Code Climate](https://codeclimate.com/github/dkowis/lita-jenkins-notifier.png)](https://codeclimate.com/github/dkowis/lita-jenkins-notifier)
+[![Coverage Status](https://coveralls.io/repos/dkowis/lita-jenkins-notifier/badge.png)](https://coveralls.io/r/dkowis/lita-jenkins-notifier)
+
+
+This plugin will provide a way for the [Jenkins Notification Plugin](https://wiki.jenkins-ci.org/display/JENKINS/Notification+Plugin)
+to push notifications to your bot, so it can annoy you in IRC when things fail, or succeed, or some combination of both!
 
 ## Installation
 
