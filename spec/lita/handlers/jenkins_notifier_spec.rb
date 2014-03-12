@@ -21,12 +21,13 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
             <<-DATA.chomp
 {"name":"#{job_name}",
  "url":"JobUrl",
- "build":{"number":#{build_number},
+ "build":{
+      "number":#{build_number},
 	  "phase":"#{phase}",
 	  "status":"#{status}",
-          "url":"job/project/5",
-          "full_url":"http://ci.jenkins.org/job/project/5",
-          "parameters":{"branch":"#{branch}"}
+      "url":"job/project/5",
+      "full_url":"http://ci.jenkins.org/job/project/5",
+      "parameters":{"branch":"#{branch}"}
 	 }
 }
             DATA
@@ -37,17 +38,68 @@ describe Lita::Handlers::JenkinsNotifier, lita_handler: true do
                 Lita.config.handlers.jenkins_notifier.jobs[/.*/] = "#baz"
                 expect(robot).to receive(:send_message) do |target, message|
                     expect(target.room).to eq("#baz")
-                    expect(message).to include("[Jenkins] Job job #1 STARTED on branch master")
+                    expect(message).to eq("[Jenkins] Build #1 started for devBuild on master: http://ci.jenkins.org/job/project/5")
                 end
 
-                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("job", 1, "STARTED", "SUCCESS", "master"))
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "STARTED", "SUCCESS", "master"))
 
                 subject.build_notification(request, response)
             end
-            it "sends a notification message when the build fails"
-            it "sends a notification message when the build passes"
-            it "sends a notification message when the build is still passing"
-            it "sends a notification message when the build is still failing"
+            it "sends a notification message when the build fails" do
+                Lita.config.handlers.jenkins_notifier.jobs[/.*/] = "#baz"
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [FAILURE] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
+
+                subject.build_notification(request, response)
+            end
+            it "sends a notification message when the build passes" do
+                Lita.config.handlers.jenkins_notifier.jobs[/.*/] = "#baz"
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [SUCCESS] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
+
+                subject.build_notification(request, response)
+            end
+            it "sends a notification message when the build is still passing" do
+                Lita.config.handlers.jenkins_notifier.jobs[/.*/] = "#baz"
+
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [SUCCESS] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "SUCCESS", "master"))
+                subject.build_notification(request, response)
+
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [STILL SUCCESSFUL] Build #2 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 2, "COMPLETED", "SUCCESS", "master"))
+                subject.build_notification(request, response)
+            end
+            it "sends a notification message when the build is still failing" do
+                Lita.config.handlers.jenkins_notifier.jobs[/.*/] = "#baz"
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [FAILURE] Build #1 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 1, "COMPLETED", "FAILURE", "master"))
+                subject.build_notification(request, response)
+
+                expect(robot).to receive(:send_message) do |target, message|
+                    expect(target.room).to eq("#baz")
+                    expect(message).to eq("[Jenkins] [STILL FAILING] Build #2 Completed for devBuild on master: http://ci.jenkins.org/job/project/5")
+                end
+                allow(params).to receive(:[]).with("payload").and_return(jenkins_payload("devBuild", 2, "COMPLETED", "FAILURE", "master"))
+                subject.build_notification(request, response)
+            end
         end
 
 

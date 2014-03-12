@@ -2,6 +2,11 @@ module Lita
     module Handlers
         class JenkinsNotifier < Handler
 
+            def initialize(robot)
+                super(robot)
+                @job_statuses = {}
+            end
+
             def self.default_config(config)
                 config.jobs = {}
             end
@@ -11,13 +16,13 @@ module Lita
             def build_notification(request, response)
                 json_stuff = request.params['payload']
                 begin
-                    payload = MultiJson.load(json_stuff)
+                    payload = MultiJson.load(json_stuff, :symbolize_keys => true)
                 rescue MultiJson::LoadError => e
                     Lita.logger.error("Could not parse JSON payload from jenkins: #{e.message}")
                     Lita.logger.debug("JSON PAYLOAD: " + json_stuff)
                     return
                 end
-                rooms = get_rooms(payload['name'])
+                rooms = get_rooms(payload[:name])
 
                 message = create_message(payload)
                 rooms.each do |room|
@@ -29,10 +34,31 @@ module Lita
             private
 
             def create_message(payload)
-                require 'pp'
-                pp payload
-                if payload['build']['phase'] == "STARTED"
-                    "[Jenkins] Build ##{payload['build']['number']} started for job #{payload['name']}..."
+                name = payload[:name]
+                build = payload[:build]
+
+                phase = build[:phase]
+                number = build[:number]
+                status = build[:status]
+                branch = build[:parameters][:branch]
+                full_url = build[:full_url]
+
+                if phase == "STARTED"
+                    "[Jenkins] Build ##{number} started for #{name} on #{branch}: #{full_url}"
+                elsif phase == "COMPLETED" || phase == "FINISHED"
+                    if @job_statuses[name] == status
+                        phrase = if status == "SUCCESS"
+                                     "SUCCESSFUL"
+                                 elsif status == "FAILURE"
+                                     "FAILING"
+                                 elsif status == "NOT_BUILT"
+                                     "NOT BUILT"
+                                 end
+                        "[Jenkins] [STILL #{phrase}] Build ##{number} Completed for #{name} on #{branch}: #{full_url}"
+                    else
+                        @job_statuses[name] = status
+                        "[Jenkins] [#{status}] Build ##{number} Completed for #{name} on #{branch}: #{full_url}"
+                    end
                 end
             end
 
